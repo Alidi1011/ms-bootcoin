@@ -5,20 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PurchaseDto {
-    private BigDecimal amountBootcoin;
-    private BigDecimal amountSoles;
-    private String paymentOriginType;
-    private String paymentOriginNumber;
-    private String paymentDestinyType;
+public class TransactionDto {
+    private String paymentDestinyMode;
     private String paymentDestinyNumber;
+    private String sellerPhone;
     private String dateTime;
     private String purchaseTempId;
 }

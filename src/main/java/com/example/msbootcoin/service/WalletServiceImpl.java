@@ -43,6 +43,7 @@ public class WalletServiceImpl implements WalletService {
   public Wallet update(Wallet customerWallet) {
     Wallet wallet = repository.findById(customerWallet.getId()).get();
     customerWallet.setCreatedAt(wallet.getCreatedAt());
+    customerWallet.setUpdatedAt(LocalDateTime.now());
     return repository.save(customerWallet);
   }
 

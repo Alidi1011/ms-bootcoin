@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,9 +17,12 @@ public class Transaction {
   private String id;
   private BigDecimal amountBootcoin;
   private BigDecimal amountSoles;
-  private String paymentOriginType;
+  private String paymentOriginMode;
   private String paymentOriginNumber;
-  private String paymentDestinyType;
+  private String paymentDestinyMode;
   private String paymentDestinyNumber;
+  @Indexed
+  private String buyerPhone;
+  private String sellerPhone;
   private LocalDateTime dateTime;
 }

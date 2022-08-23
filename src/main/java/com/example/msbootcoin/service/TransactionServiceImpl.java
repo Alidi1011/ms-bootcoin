@@ -41,4 +41,9 @@ public class TransactionServiceImpl implements TransactionService {
   public void delete(String id) {
     repository.deleteById(id);
   }
+
+  @Override
+  public List<Transaction> findByBuyerPhone(String phone) {
+    return repository.findByBuyerPhone(phone);
+  }
 }

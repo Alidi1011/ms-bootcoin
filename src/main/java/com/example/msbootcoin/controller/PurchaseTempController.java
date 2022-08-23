@@ -32,7 +32,7 @@ public class PurchaseTempController {
 
   @GetMapping("/{id}")
   public PurchaseTemp read(@PathVariable String id) {
-    return purchaseService.read(id);
+    return purchaseService.read(id).get();
   }
 
   @DeleteMapping("/{id}")

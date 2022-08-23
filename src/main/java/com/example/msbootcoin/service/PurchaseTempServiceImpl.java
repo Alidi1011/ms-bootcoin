@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PurchaseTempServiceImpl implements PurchaseTempService {
@@ -22,8 +23,8 @@ public class PurchaseTempServiceImpl implements PurchaseTempService {
   }
 
   @Override
-  public PurchaseTemp read(String id) {
-    return repository.findById(id).get();
+  public Optional<PurchaseTemp> read(String id) {
+    return repository.findById(id);
   }
 
   @Override

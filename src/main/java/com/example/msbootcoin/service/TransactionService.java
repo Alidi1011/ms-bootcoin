@@ -14,4 +14,7 @@ public interface TransactionService {
   Transaction update(Transaction transaction);
 
   void delete(String id);
+
+  List<Transaction> findByBuyerPhone(String phone);
+
 }

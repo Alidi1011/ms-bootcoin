@@ -22,7 +22,7 @@ public class TransactionController {
   private TransactionService transactionService;
 
   @GetMapping
-  public List<Transaction> getWallets() {
+  public List<Transaction> getTransactions() {
     return transactionService.findAll();
   }
 
@@ -44,5 +44,10 @@ public class TransactionController {
   @DeleteMapping("/{id}")
   public void delete(@PathVariable String id) {
     transactionService.delete(id);
+  }
+
+  @GetMapping("/byBuyerPhone/{phone}")
+  public List<Transaction> getTransactions(@PathVariable String phone) {
+    return transactionService.findByBuyerPhone(phone);
   }
 }

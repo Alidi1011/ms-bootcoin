@@ -1,6 +1,6 @@
 package com.example.msbootcoin.kafka.consumer;
 
-import com.example.msbootcoin.dto.PurchaseDto;
+import com.example.msbootcoin.dto.TransactionDto;
 import com.example.msbootcoin.model.PurchaseTemp;
 import com.example.msbootcoin.model.Transaction;
 import com.example.msbootcoin.model.Wallet;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -29,47 +30,32 @@ public class PurchaseConsumer {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-
     @KafkaListener(topics = "${kafka.topic.name}")
-    public void listener(@Payload PurchaseDto purchaseDto) {
-        log.info("Message received in ms-bootcoin: {} ", purchaseDto);
+    public void listener(@Payload TransactionDto transactionDto) {
+        log.info("Message received in ms-bootcoin: {} ", transactionDto);
 
-        PurchaseTemp purchaseTemp = this.getPurchaseTemp(purchaseDto.getPurchaseTempId());
+        Optional<PurchaseTemp> purchaseTemp = this.getPurchaseTemp(transactionDto.getPurchaseTempId());
 
-        Wallet walletOrigin = this.getWalletByPhoneNumber(purchaseDto.getPaymentOriginNumber());
-        Wallet walletDestiny = this.getWalletByPhoneNumber(purchaseDto.getPaymentDestinyNumber());
+        if(purchaseTemp.isPresent()) {
+            Wallet walletOrigin = this.getWalletByPhoneNumber(purchaseTemp.get().getBuyerPhone());
+            Wallet walletDestiny = this.getWalletByPhoneNumber(transactionDto.getSellerPhone());
 
+            if(walletOrigin != null && walletDestiny != null){
+                walletOrigin.setBalance(walletOrigin.getBalance().add(purchaseTemp.get().getAmountBootcoin()));
+                walletDestiny.setBalance(walletDestiny.getBalance().subtract(purchaseTemp.get().getAmountBootcoin()));
+                walletService.update(walletOrigin);
+                walletService.update(walletDestiny);
 
-        if(walletOrigin != null & walletDestiny != null){
-            Transaction transaction = new Transaction();
-            LocalDateTime dateTime;
+                this.saveTransaction(purchaseTemp.get(), transactionDto);
 
-            if(purchaseDto.getDateTime() == null){
-                dateTime = LocalDateTime.now();
+                purchaseService.delete(purchaseTemp.get().getId());
+
             }else{
-                dateTime = LocalDate.parse(purchaseDto.getDateTime(), FORMATTER).atStartOfDay();
+                log.error("PhoneNumbers sent don't exist in ms-bootcoin");
             }
-
-            transaction.setAmountBootcoin(purchaseDto.getAmountBootcoin());
-            transaction.setAmountSoles(purchaseDto.getAmountSoles());
-            transaction.setPaymentOriginType(purchaseDto.getPaymentOriginType());
-            transaction.setPaymentOriginNumber(purchaseDto.getPaymentOriginNumber());
-            transaction.setPaymentDestinyType(purchaseDto.getPaymentDestinyType());
-            transaction.setPaymentDestinyNumber(purchaseDto.getPaymentDestinyNumber());
-            transaction.setDateTime(dateTime);
-
-            walletOrigin.setBalance(walletOrigin.getBalance().add(purchaseDto.getAmountBootcoin()));
-            walletDestiny.setBalance(walletDestiny.getBalance().subtract(purchaseDto.getAmountBootcoin()));
-
-            walletService.update(walletOrigin);
-            walletService.update(walletDestiny);
-            purchaseService.delete(purchaseTemp.getId());
-            Transaction transactionSaved = transactionService.save(transaction);
-            log.info("walletTransaction saved in ms-bootcoin: {} ", transactionSaved);
         }else{
-            log.error("PhoneNumbers sent don't exist in ms-bootcoin");
+            log.error("PurchaseTempId received don't exist in ms-bootcoin");
         }
-
     }
 
     private Wallet getWalletByPhoneNumber(String phoneNumber){
@@ -81,13 +67,35 @@ public class PurchaseConsumer {
         return wallet;
     }
 
-    private PurchaseTemp getPurchaseTemp(String idPurchaseTemp){
-        System.out.println("idPurchaseTemp:" + idPurchaseTemp);
-        PurchaseTemp purchaseTemp = purchaseService.read(idPurchaseTemp);
-        if(purchaseTemp == null) {
+    private Optional<PurchaseTemp> getPurchaseTemp(String idPurchaseTemp){
+        log.info("idPurchaseTemp:" + idPurchaseTemp);
+        Optional<PurchaseTemp> purchaseTemp = purchaseService.read(idPurchaseTemp);
+        if(!purchaseTemp.isPresent()) {
             log.error("idPurchaseTemp: " + idPurchaseTemp + " sent don't exist in ms-bootcoin");
         }
         return purchaseTemp;
+    }
+
+    private void saveTransaction(PurchaseTemp purchaseTemp, TransactionDto transactionDto){
+        Transaction transaction = new Transaction();
+        LocalDateTime dateTime;
+
+        if(transactionDto.getDateTime() == null){
+            dateTime = LocalDateTime.now();
+        }else{
+            dateTime = LocalDate.parse(transactionDto.getDateTime(), FORMATTER).atStartOfDay();
+        }
+        transaction.setAmountBootcoin(purchaseTemp.getAmountBootcoin());
+        transaction.setAmountSoles(purchaseTemp.getAmountSoles());
+        transaction.setPaymentOriginMode(purchaseTemp.getPaymentMode().getValue());
+        transaction.setPaymentOriginNumber(purchaseTemp.getPaymentNumber());
+        transaction.setPaymentDestinyMode(transactionDto.getPaymentDestinyMode());
+        transaction.setPaymentDestinyNumber(transactionDto.getPaymentDestinyNumber());
+        transaction.setBuyerPhone(purchaseTemp.getBuyerPhone());
+        transaction.setSellerPhone(transactionDto.getSellerPhone());
+        transaction.setDateTime(dateTime);
+        Transaction transactionSaved = transactionService.save(transaction);
+        log.info("walletTransaction saved in ms-bootcoin: {} ", transactionSaved);
     }
 
 }

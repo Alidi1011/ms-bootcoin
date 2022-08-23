@@ -1,6 +1,6 @@
 package com.example.msbootcoin.model;
 
-import com.example.msbootcoin.enums.PaymentTypeEnum;
+import com.example.msbootcoin.enums.PaymentModeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -16,6 +16,7 @@ public class PurchaseTemp {
   private String id;
   private BigDecimal amountBootcoin;
   private BigDecimal amountSoles;
-  private PaymentTypeEnum paymentType;
+  private PaymentModeEnum paymentMode;
   private String paymentNumber;
+  private String buyerPhone;
 }

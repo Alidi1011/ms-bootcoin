@@ -25,4 +25,5 @@ public class Wallet implements Serializable {
   private String email;
   private BigDecimal balance;
   private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
 }

@@ -1,6 +1,6 @@
 package com.example.msbootcoin.config;
 
-import com.example.msbootcoin.dto.PurchaseDto;
+import com.example.msbootcoin.dto.TransactionDto;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,34 +19,34 @@ import java.util.Map;
 @Configuration
 public class KafkaConsumerConfig {
 
-  @Value("${spring.kafka.bootstrap-servers}")
-  private String bootstrapServers;
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
 
-  @Bean
-  public ConsumerFactory<String, PurchaseDto> consumerFactory() {
-    JsonDeserializer<PurchaseDto> jsonDeserializer = new JsonDeserializer<>(PurchaseDto.class, false);
-    jsonDeserializer.addTrustedPackages("*");
-    return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new StringDeserializer(), jsonDeserializer);
-  }
+    @Bean
+    public ConsumerFactory<String, TransactionDto> consumerFactory() {
+        JsonDeserializer<TransactionDto> jsonDeserializer = new JsonDeserializer<>(TransactionDto.class, false);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new StringDeserializer(), jsonDeserializer);
+    }
 
-  @Bean
-  public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, PurchaseDto>> kafkaListenerContainerFactory() {
-    ConcurrentKafkaListenerContainerFactory<String, PurchaseDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
-    factory.setConsumerFactory(consumerFactory());
+    @Bean
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, TransactionDto>> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, TransactionDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory());
 
-    return factory;
-  }
+        return factory;
+    }
 
-  @Bean
-  public Map<String, Object> consumerConfigs() {
-    Map<String, Object> props = new HashMap<>();
-    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-        bootstrapServers);
-    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-        StringDeserializer.class);
-    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, "purchaseGroup");
-    return props;
-  }
+    @Bean
+    public Map<String, Object> consumerConfigs() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                bootstrapServers);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "purchaseGroup");
+        return props;
+    }
 
 }
